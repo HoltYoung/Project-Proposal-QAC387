@@ -1,0 +1,211 @@
+HypothesisLoop 
+An LLM-Powered Iterative Hypothesis-Testing Agent for Data Analysis 
+Holt Young & Sam Penn 
+QAC387 - Spring 2026 
+March 6, 2026 
+1. Project Title 
+HypothesisLoop: An LLM-Powered Iterative Hypothesis-Testing Agent for Data Analysis 
+2. Team Members 
+•​
+Holt Young 
+•​
+Sam Penn 
+3. Problem Statement & Motivation 
+Data analysis is a manual and repetitive process. An analyst looks at a dataset, comes 
+up with a question, writes code, reads the results, and then figures out what to look at 
+next. The quality of the analysis depends on the analyst's experience, and many people 
+who need data insights lack the coding or statistics background to do it well. 
+Existing LLM tools like ChatGPT's Code Interpreter can answer one-off questions about 
+data, but they don't follow up on what they find. You get one answer and have to figure 
+out the next question yourself. We want to build an LLM-based agent that wraps the 
+scientific method loop (hypothesize, test, learn, repeat) around a dataset so it can 
+conduct a multi-step analysis on its own. 
+4. Application Concept & Features 
+HypothesisLoop is a Python application where an LLM iteratively analyzes a dataset. 
+The user provides a CSV and a research question, and the agent enters a loop: 
+1. Hypothesize - The LLM proposes a testable hypothesis about the data 
+2. Experiment - The LLM writes and runs Python code to test it 
+3. Evaluate - The LLM interprets the results (p-values, effect sizes, etc.) 
+4. Learn - Results are stored in a memory/trace system 
+5. Repeat - The LLM uses what it learned to propose a new hypothesis 
+After a set number of iterations (default 5), the agent produces a summary report with 
+its findings, charts, and reasoning chain. 
+Key Features 
+•​
+Iterative loop where each round is informed by previous results 
+•​
+Hypothesis trace viewable in Langfuse showing every hypothesis and outcome 
+
+•​
+Code generation and sandboxed execution using pandas, scipy, and sklearn 
+•​
+Final report with embedded charts 
+•​
+Option for the user to intervene mid-loop to steer the analysis 
+LLM Usage 
+Our primary model will be Anthropic Claude Opus 4.6. The app will be built so users can 
+swap in OpenAI or other API keys if they prefer. The LLM handles hypothesis 
+generation (structured JSON output), code writing and execution, result interpretation, 
+and report writing. We will pass the full history of previous iterations as context so the 
+LLM can build on what it has already learned. 
+5. Step-by-Step Development Approach 
+Phase 1: Initial Research and Resource Collection (Weeks 1-2, Spring Break) 
+•​
+Research iterative agent architectures and memory patterns 
+•​
+Set up development environment: Python, Anthropic API, Langfuse 
+•​
+Download candidate datasets 
+•​
+Sketch out the core loop design 
+Phase 2: Data Selection and Rationale (Week 3) 
+•​
+Finalize dataset selection 
+•​
+Build data loading and profiling module 
+•​
+Test the LLM's ability to describe and reason about the dataset 
+Phase 3: Application Development and Integration (Weeks 4-6) 
+Week 4: Build the core loop - hypothesis generation prompts, code generation with 
+sandboxed execution, result evaluation, and the trace/memory system. 
+Week 5: Build the feedback mechanism so the LLM sees all prior results before 
+proposing a new hypothesis. Add Langfuse tracing. 
+Week 6: Build the report generator (matplotlib charts, Markdown/HTML output) and a 
+simple Streamlit or CLI frontend. 
+Phase 4: Testing and Validation (Week 7) 
+•​
+Test on 3+ datasets from different domains 
+•​
+Compare findings against known ground-truth relationships 
+•​
+Measure whether later iterations produce better hypotheses 
+•​
+User testing with 2-3 classmates 
+Phase 5: Refinements, Safety & Ethical Considerations (Week 8) 
+•​
+Add execution guardrails (restricted imports, timeouts) 
+•​
+Validate statistical claims in the output 
+
+•​
+Write final report and prepare presentation 
+6. Data Source & Preprocessing 
+Our primary dataset is the UCI Adult Income Dataset (publicly available, 48,842 
+records, 14 attributes). It includes census data with demographic features like age, 
+education, occupation, race, and sex, predicting whether income exceeds $50K/year. 
+We chose it because it has both numerical and categorical variables and well-known 
+relationships (e.g., education and income) we can use to check whether the agent finds 
+real patterns. 
+We will also test on the Kaggle House Prices dataset (79 features, regression) and the 
+WHO Life Expectancy dataset (health and economic indicators) to see how well the 
+agent generalizes. 
+The agent will handle preprocessing (missing values, encoding, outlier detection) as 
+part of its first iteration. We will compare its cleaning against a manual baseline. 
+7. Testing & Validation Plan 
+We will use Langfuse to trace and log every LLM call during the analysis. 
+Quantitative 
+•​
+Run the agent on datasets with known relationships and measure how many it 
+finds 
+•​
+Track hypothesis quality across iterations to see if later rounds improve 
+•​
+Measure code execution success rate 
+•​
+Log token usage, latency, and cost per session in Langfuse 
+Qualitative 
+•​
+Have 2-3 classmates run the agent on a dataset themselves and rate whether 
+the final report made sense and was useful (1-5 scale) 
+•​
+Compare agent output to a manual analysis of the same data 
+•​
+Review Langfuse traces to check if the reasoning chain makes sense 
+Since LLM outputs vary between runs, we will run each analysis multiple times and 
+check consistency. 
+8. Ethical Considerations, Bias Mitigation, & Safety 
+•​
+Bias: The LLM could make unwarranted causal claims about sensitive variables 
+(e.g., race and income). As a first step, the system prompt will instruct the model 
+to distinguish correlation from causation. On top of that, we will add a 
+post-processing check that flags causal language (words like "causes," "leads 
+to," "due to") in any finding that involves a sensitive variable. Any flagged output 
+will get a disclaimer header. We recognize the system prompt alone is not a 
+reliable guardrail, so these layered checks are important. 
+
+•​
+Overconfidence: Findings will include significance levels and caveats where 
+appropriate. 
+•​
+Data privacy: User data is sent to an external LLM API. We will notify users and 
+suggest local alternatives for sensitive data. 
+•​
+Transparency: Langfuse traces let users audit every step of the agent's 
+reasoning. 
+•​
+Safety: Sandboxed code execution, restricted imports, output size limits, and 
+iteration caps. 
+9. Expected Challenges 
+•​
+Code bugs: LLM-generated code sometimes fails. We will add retry logic so the 
+LLM can see and fix its own errors. 
+•​
+Repetitive hypotheses: Later iterations may rehash earlier ones. We will track 
+what has been tested and prompt for novelty. 
+•​
+Context window limits: Long trace histories may not fit. We will summarize 
+older iterations. 
+•​
+Varying outputs: Results change between runs. We will run multiple times and 
+compare. 
+10. Milestones & Timeline 
+Week 
+Dates 
+Milestone 
+Deliverable 
+1-2 
+Mar 9 - Mar 22 
+(Spring Break) 
+Research & setup 
+Architecture doc, dev environment, 
+datasets 
+3 
+Mar 23 - Mar 29 
+Data module + LLM 
+integration 
+Data loader + single-shot LLM 
+analysis 
+4 
+Mar 30 - Apr 5 
+Core hypothesis loop 
+Agent runs 3 iterations on its own 
+5 
+Apr 6 - Apr 12 
+Feedback + Langfuse tracing Iteration learning working, full traces 
+6 
+Apr 13 - Apr 19 
+Report generation + UI 
+Streamlit/CLI interface, formatted 
+output 
+7 
+Apr 20 - Apr 26 
+Testing & validation 
+Results on 3+ datasets, user 
+feedback 
+8 
+Apr 27 - May 3 
+Polish & final report 
+Final app, slides, written report 
+ 
+11. Expected Project Deliverables 
+•​
+A fully functional Python-based application demonstrating LLM-powered iterative 
+data analysis 
+•​
+A final presentation to the class showcasing the application, results, and key 
+experiences 
+
+•​
+A final written report summarizing our approach, findings, challenges, and 
+potential future improvements 
+
